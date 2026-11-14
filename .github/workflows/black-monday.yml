@@ -9,7 +9,7 @@ permissions:
 jobs:
   compare-garch:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -21,6 +21,8 @@ jobs:
         run: python download_data.py
       - name: Fit models and generate results
         run: python black_monday.py
+      - name: Rolling model comparison figures
+        run: python compare_models.py
       - uses: actions/upload-artifact@v7
         with:
           name: black-monday-results
