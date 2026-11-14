@@ -22,39 +22,6 @@ The S&P 500 fell **20.47%** on Black Monday.
 
 The Student-t fit estimated 8.17 degrees of freedom and assigned far more probability to the crash despite a slightly lower volatility forecast. Both models still assigned very small probabilities. These probabilities are extrapolations from fitted models for one session. The event study alone cannot establish which model produces better forecasts across many days.
 
-## Run on your Mac with Codex
-
-Open this folder in Codex or Terminal. The analysis was verified with Python 3.10. Once the daily CSV is present, the analysis can run offline.
-
-```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python download_data.py
-.venv/bin/python black_monday.py
-```
-
-The packages live inside the project’s `.venv` folder. The data goes to `data/sp500_daily.csv`. The model comparison is in `outputs/model_comparison.csv`.
-
-### Figures for the modelling slides
-
-1. **Model setup.** Use `outputs/forecast_timeline.png` to show the Friday cutoff and the held-out Monday return. Both models were fit on the full pre-crash training window described above. The figure zooms in on October.
-2. **Forecast comparison.** Use `outputs/black_monday.png` to show the two estimated probabilities of Monday’s loss or worse. The probabilities use a log axis because they span many orders of magnitude. Both models treat the crash as extremely unlikely, even with the market moves observed through Friday.
-
-## Share and run through GitHub
-
-If your teammate already has a repository, clone it, create a branch, and copy these project files into it. Add the Python scripts, requirements, README, and workflow file. Merge the ignore rules into any existing `.gitignore`. Commit, push the branch, and open a pull request.
-
-If you are starting a new team repository, create an empty private repository on GitHub. From this folder, create a local commit if needed and then push it. Replace `OWNER/REPO` with the path to your new repository. Invite your teammate from the repository settings. [GitHub’s steps for publishing local code](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github?platform=mac)
-
-```sh
-# First commit, if this folder does not already have one
-git init -b main
-git add .gitignore .github README.md requirements.txt download_data.py black_monday.py
-git commit -m "Compare GARCH models for Black Monday"
-
-# Connect the new empty GitHub repo
-git remote add origin https://github.com/OWNER/REPO.git
-git push -u origin main
 ```
 
 Once the workflow file is on the default branch, open **Actions → Run Black Monday analysis → Run workflow**. GitHub downloads the data and installs packages on its own runner. Open the completed run and download **black-monday-results** under **Artifacts** for the CSV and figures. [Running a GitHub workflow manually](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)
