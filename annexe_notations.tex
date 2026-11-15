@@ -1,0 +1,191 @@
+\section*{Appendix~A --- Notation and Variable Definitions}
+\label{annexe:notations}
+
+This appendix lists all symbols used in the presentation of the five forecasting models: Gaussian ARMA (ARMA-N), Student-$t$ ARMA (ARMA-t), ARMA-GARCH-t~\cite{Bollerslev1986}, Extreme Value / McNeil--Frey~\cite{McNeilFrey2000}, and AR-SD-t~\cite{DelleMonachePetrella2017}. When the same symbol appears in more than one model, its local meaning is spelled out.
+
+\subsection*{A.1 Common variables and parameters}
+
+\begin{description}[style=nextline,leftmargin=2.2cm,labelwidth=2cm]
+  \item[$t$]
+    Time index (trading day).
+  \item[$Y_t$]
+    Observed return at date~$t$ (here, the simple return of the S\&P\,500, in percent).
+  \item[$Y_{t-1}$]
+    One-period lagged return.
+  \item[$c$]
+    Constant (intercept) in the mean equation of the ARMA and ARMA-GARCH models.
+  \item[$\varphi$]
+    Fixed autoregressive (AR) coefficient in the ARMA and ARMA-GARCH models.
+  \item[$\theta$]
+    Fixed moving-average (MA) coefficient in the ARMA(1,1) models.
+  \item[$W_t$]
+    Innovation (noise) at date~$t$. Its distribution depends on the model:
+    Gaussian for ARMA-N, Student-$t$ for ARMA-t and AR-SD-t,
+    and $\sigma_t Z_t$ for ARMA-GARCH-t.
+  \item[$W_{t-1}$]
+    One-period lagged innovation (MA term).
+  \item[$\nu$]
+    Degrees of freedom of the Student-$t$ distribution; controls tail thickness
+    ($\nu > 2$ for a finite variance).
+\end{description}
+
+\subsection*{A.2 ARMA with Gaussian noise (ARMA-N)}
+
+\begin{equation*}
+  Y_t = c + \varphi Y_{t-1} + W_t + \theta W_{t-1},
+  \qquad
+  W_t \sim \mathcal{N}(0,\sigma^2).
+\end{equation*}
+
+\begin{description}[style=nextline,leftmargin=2.2cm,labelwidth=2cm]
+  \item[$\mathcal{N}(0,\sigma^2)$]
+    Zero-mean normal distribution with variance~$\sigma^2$.
+  \item[$\sigma^2$]
+    (Constant) variance of the Gaussian innovations.
+  \item[$\sigma$]
+    Unconditional standard deviation of the innovations ($\sigma > 0$).
+\end{description}
+
+\subsection*{A.3 ARMA with Student-$t$ noise (ARMA-t)}
+
+\begin{equation*}
+  Y_t = c + \varphi Y_{t-1} + W_t + \theta W_{t-1},
+  \qquad
+  W_t \sim t_{\nu}(0,s).
+\end{equation*}
+
+\begin{description}[style=nextline,leftmargin=2.2cm,labelwidth=2cm]
+  \item[$t_{\nu}(0,s)$]
+    Centered Student-$t$ distribution with $\nu$ degrees of freedom and scale parameter~$s$.
+  \item[$s$]
+    Scale parameter of the Student-$t$ (counterpart of~$\sigma$ in the Gaussian case);
+    the variance equals $s^2\,\nu/(\nu-2)$ when $\nu > 2$.
+\end{description}
+
+\subsection*{A.4 ARMA-GARCH-t}
+
+\begin{align*}
+  Y_t &= c + \varphi Y_{t-1} + W_t, \\
+  W_t &= \sigma_t Z_t,
+  \qquad Z_t \sim t_{\nu}, \\
+  \sigma_t^2 &= \omega + \alpha W_{t-1}^2 + \beta \sigma_{t-1}^2.
+\end{align*}
+
+\begin{description}[style=nextline,leftmargin=2.2cm,labelwidth=2cm]
+  \item[$\sigma_t$]
+    Conditional volatility at date~$t$ ($\sigma_t > 0$).
+  \item[$\sigma_t^2$]
+    Conditional variance at date~$t$.
+  \item[$\sigma_{t-1}^2$]
+    Lagged conditional variance (GARCH persistence).
+  \item[$Z_t$]
+    Standardized residual: unit-variance white innovation,
+    here following a Student-$t$ distribution with $\nu$ degrees of freedom.
+  \item[$\omega$]
+    Constant in the GARCH variance equation ($\omega > 0$).
+  \item[$\alpha$]
+    ARCH coefficient: sensitivity of~$\sigma_t^2$ to the squared lagged innovation
+    $W_{t-1}^2$ ($\alpha \geq 0$).
+  \item[$\beta$]
+    GARCH coefficient: persistence of the conditional variance
+    ($\beta \geq 0$, typically with $\alpha + \beta < 1$).
+    \emph{Do not confuse} with the GPD scale parameter~$\beta$ (Section~A.5).
+\end{description}
+
+\subsection*{A.5 Extreme Value (McNeil--Frey)}
+
+After a Gaussian AR(1)--GARCH(1,1) filter, the analysis is carried out on the estimated standardized residuals.
+The lower tail is modeled with a generalized Pareto distribution (GPD) on excesses over a high threshold.
+
+\begin{align*}
+  \hat{Z}_t &= \frac{\hat{W}_t}{\hat{\sigma}_t}, \\
+  X &:= \bigl(-\hat{Z} - u \bigm| -\hat{Z} > u\bigr) \sim \mathrm{GPD}(\xi,\beta), \\
+  f(x) &=
+  \begin{cases}
+    \dfrac{1}{\beta}\Bigl(1 + \dfrac{\xi x}{\beta}\Bigr)^{-\frac{1}{\xi}-1}
+      & \text{if } \xi \neq 0, \\[1em]
+    \dfrac{1}{\beta}\, e^{-x/\beta}
+      & \text{otherwise.}
+  \end{cases}
+\end{align*}
+
+\begin{description}[style=nextline,leftmargin=2.2cm,labelwidth=2cm]
+  \item[$\hat{W}_t$]
+    Estimated innovation from the AR--GARCH filter at date~$t$.
+  \item[$\hat{\sigma}_t$]
+    Estimated conditional volatility at date~$t$.
+  \item[$\hat{Z}_t$]
+    Estimated standardized residual~$\hat{W}_t / \hat{\sigma}_t$.
+  \item[$-\hat{Z}$]
+    Standardized loss (sign-flipped): downside extremes correspond to large positive values of~$-\hat{Z}$.
+  \item[$u$]
+    High threshold beyond which excesses are modeled by the GPD.
+  \item[$X$]
+    Excess of the standardized loss above the threshold~$u$, conditional on an exceedance.
+  \item[$\mathrm{GPD}(\xi,\beta)$]
+    Generalized Pareto distribution with shape~$\xi$ and scale~$\beta$.
+  \item[$\xi$]
+    Shape parameter (tail index) of the GPD:
+    $\xi > 0$ (heavy tail), $\xi = 0$ (exponential tail), $\xi < 0$ (bounded support).
+  \item[$\beta$]
+    Scale parameter of the GPD ($\beta > 0$).
+    Distinct from the GARCH coefficient~$\beta$ in Section~A.4.
+  \item[$f(x)$]
+    GPD density evaluated at~$x \geq 0$ (with $1 + \xi x / \beta > 0$ if $\xi \neq 0$).
+  \item[$x$]
+    Dummy variable for evaluating / integrating the density~$f$.
+\end{description}
+
+\subsection*{A.6 AR-SD-t (score-driven)}
+
+\begin{align*}
+  Y_t &= \varphi_{0,t} + \varphi_{1,t} Y_{t-1} + \sigma_t W_t,
+  \qquad W_t \sim t_{\nu}, \\
+  \varphi_{0,t+1} &= \varphi_{0,t} + \kappa_{\varphi}\, w_t\,(\sigma_t W_t), \\
+  \varphi_{1,t+1} &= \varphi_{1,t} + \kappa_{\varphi}\, w_t\,(\sigma_t W_t)\, Y_{t-1}, \\
+  \log(\sigma_{t+1}) &= \log(\sigma_t) + \tfrac{1}{2}\,\kappa_{\sigma}\,(w_t \zeta_t^2 - 1).
+\end{align*}
+
+\begin{description}[style=nextline,leftmargin=2.8cm,labelwidth=2.6cm]
+  \item[$\varphi_{0,t}$]
+    Time-varying intercept.
+  \item[$\varphi_{1,t}$]
+    Time-varying AR coefficient.
+  \item[$\sigma_t$]
+    Time-varying conditional volatility ($\sigma_t > 0$).
+  \item[$\kappa_{\varphi}$]
+    Learning rate for the mean coefficients~$\varphi_{0,t}$ and~$\varphi_{1,t}$
+    ($\kappa_{\varphi} > 0$).
+  \item[$\kappa_{\sigma}$]
+    Learning rate for volatility~$\sigma_t$ ($\kappa_{\sigma} > 0$).
+  \item[$\zeta_t$]
+    Standardized innovation~$\zeta_t = W_t$ (equivalently $\zeta_t = (Y_t - \varphi_{0,t} - \varphi_{1,t} Y_{t-1}) / \sigma_t$).
+  \item[$w_t$]
+    Score-driven weight associated with the Student-$t$ density;
+    it down-weights extreme observations. In the specification used here,
+    \[
+      w_t = \frac{1+\eta}{1 - 2\eta + \eta\,\zeta_t^2},
+      \qquad \eta = \frac{1}{\nu}.
+    \]
+  \item[$\eta$]
+    Inverse degrees of freedom: $\eta = 1/\nu$.
+  \item[$\sigma_t W_t$]
+    Non-standardized innovation (mean residual):
+    $Y_t - \varphi_{0,t} - \varphi_{1,t} Y_{t-1}$.
+  \item[$\log(\sigma_t)$]
+    Log-volatility; the dynamics are written on the log scale to keep $\sigma_t > 0$.
+\end{description}
+
+\subsection*{A.7 Summary of notational ambiguities}
+
+\begin{itemize}
+  \item $\beta$ denotes the GARCH coefficient in ARMA-GARCH-t, and the GPD scale in the Extreme Value model.
+  \item $\sigma$ / $\sigma_t$ denote a constant innovation scale (ARMA-N) or a conditional volatility (GARCH, AR-SD-t).
+  \item $W_t$ is always the mean-equation innovation, but its distribution and any heteroskedastic structure depend on the model.
+  \item Hats ($\hat{\,\cdot\,}$) mark estimated quantities (McNeil--Frey filter).
+\end{itemize}
+
+% Suggested preamble packages:
+% \usepackage{amsmath,amssymb}
+% \usepackage{enumitem}
+% plus bibliography entries Bollerslev1986, McNeilFrey2000, DelleMonachePetrella2017.
