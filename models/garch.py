@@ -1,4 +1,4 @@
-"""AR(1)–GARCH(1,1) with Student-t innovations."""
+"""AR(1)–GARCH(1,1) with Gaussian or Student-t innovations."""
 
 from __future__ import annotations
 
@@ -13,23 +13,31 @@ try:
 except Exception:
     _HAS_ARCH = False
 
+_LABELS = {"normal": "ARMA-GARCH-N", "t": "ARMA-GARCH-t"}
+_ARCH_DIST = {"normal": "normal", "t": "t"}
 
-def fit_ar_garch_t(returns) -> dict:
-    """Fit AR(1)–GARCH(1,1)–t and return VaR, AIC, residuals, and simulator."""
+
+def _fit_ar_garch(returns, distribution: str) -> dict:
+    """Fit AR(1)–GARCH(1,1) and return VaR, AIC, residuals, and simulator."""
+    if distribution not in _LABELS:
+        raise ValueError(f"Unknown distribution: {distribution}")
+    label = _LABELS[distribution]
     y = np.asarray(returns, dtype=float)
 
     if _HAS_ARCH:
-        model = arch_model(y, mean="AR", lags=1, vol="GARCH", p=1, q=1, dist="t")
+        model = arch_model(
+            y, mean="AR", lags=1, vol="GARCH", p=1, q=1, dist=_ARCH_DIST[distribution]
+        )
         fitted = model.fit(disp="off", show_warning=False)
         if fitted.convergence_flag != 0:
-            fitted_core = fit_ar_garch(y, distribution="t")
+            fitted_core = fit_ar_garch(y, distribution=distribution)
             params = fitted_core["params"]
 
             def simulate(n: int, rng: np.random.Generator) -> np.ndarray:
-                return simulate_ar_garch(params, n, rng, distribution="t")
+                return simulate_ar_garch(params, n, rng, distribution=distribution)
 
             return {
-                "model": "ARMA-GARCH-t",
+                "model": label,
                 "aic": fitted_core["aic"],
                 "var_1pct": fitted_core["var_1pct"],
                 "simulate": simulate,
@@ -41,8 +49,13 @@ def fit_ar_garch_t(returns) -> dict:
         mean = float(forecast.mean.iloc[-1, 0])
         vol = float(np.sqrt(forecast.variance.iloc[-1, 0]))
         innovation = model.distribution
-        shape = fitted.params.reindex(innovation.parameter_names()).to_numpy()
-        var_1pct = mean + vol * float(innovation.ppf(0.01, shape))
+        if distribution == "t":
+            shape = fitted.params.reindex(innovation.parameter_names()).to_numpy()
+            var_1pct = mean + vol * float(innovation.ppf(0.01, shape))
+            nu = float(fitted.params["nu"])
+        else:
+            var_1pct = mean + vol * float(innovation.ppf(0.01))
+            nu = None
         std_resid = np.asarray(fitted.std_resid, dtype=float)
         std_resid = std_resid[np.isfinite(std_resid)]
         const = float(fitted.params.get("Const", fitted.params.get("mu", 0.0)))
@@ -50,7 +63,6 @@ def fit_ar_garch_t(returns) -> dict:
         omega = float(fitted.params["omega"])
         alpha = float(fitted.params["alpha[1]"])
         beta = float(fitted.params["beta[1]"])
-        nu = float(fitted.params["nu"])
         cond_vol = np.asarray(fitted.conditional_volatility, dtype=float)
         params = {
             "const": const,
@@ -67,10 +79,10 @@ def fit_ar_garch_t(returns) -> dict:
         }
 
         def simulate(n: int, rng: np.random.Generator) -> np.ndarray:
-            return simulate_ar_garch(params, n, rng, distribution="t")
+            return simulate_ar_garch(params, n, rng, distribution=distribution)
 
         return {
-            "model": "ARMA-GARCH-t",
+            "model": label,
             "aic": float(fitted.aic),
             "var_1pct": float(var_1pct),
             "simulate": simulate,
@@ -78,17 +90,27 @@ def fit_ar_garch_t(returns) -> dict:
             "params": params,
         }
 
-    fitted = fit_ar_garch(y, distribution="t")
+    fitted = fit_ar_garch(y, distribution=distribution)
     params = fitted["params"]
 
     def simulate(n: int, rng: np.random.Generator) -> np.ndarray:
-        return simulate_ar_garch(params, n, rng, distribution="t")
+        return simulate_ar_garch(params, n, rng, distribution=distribution)
 
     return {
-        "model": "ARMA-GARCH-t",
+        "model": label,
         "aic": fitted["aic"],
         "var_1pct": fitted["var_1pct"],
         "simulate": simulate,
         "std_resid": fitted["std_resid"],
         "params": params,
     }
+
+
+def fit_ar_garch_n(returns) -> dict:
+    """Fit AR(1)–GARCH(1,1)–Normal."""
+    return _fit_ar_garch(returns, "normal")
+
+
+def fit_ar_garch_t(returns) -> dict:
+    """Fit AR(1)–GARCH(1,1)–t and return VaR, AIC, residuals, and simulator."""
+    return _fit_ar_garch(returns, "t")

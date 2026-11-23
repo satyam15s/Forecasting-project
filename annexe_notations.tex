@@ -1,7 +1,7 @@
 \section*{Appendix~A --- Notation and Variable Definitions}
 \label{annexe:notations}
 
-This appendix lists all symbols used in the presentation of the five forecasting models: Gaussian ARMA (ARMA-N), Student-$t$ ARMA (ARMA-t), ARMA-GARCH-t~\cite{Bollerslev1986}, Extreme Value / McNeil--Frey~\cite{McNeilFrey2000}, and AR-SD-t~\cite{DelleMonachePetrella2017}. When the same symbol appears in more than one model, its local meaning is spelled out.
+This appendix lists all symbols used in the presentation of the six forecasting models: Gaussian ARMA (ARMA-N), Student-$t$ ARMA (ARMA-t), ARMA-GARCH-N and ARMA-GARCH-t~\cite{Bollerslev1986}, Extreme Value / McNeil--Frey~\cite{McNeilFrey2000}, and AR-SD-t~\cite{DelleMonachePetrella2017}. When the same symbol appears in more than one model, its local meaning is spelled out.
 
 \subsection*{A.1 Common variables and parameters}
 
@@ -21,7 +21,7 @@ This appendix lists all symbols used in the presentation of the five forecasting
   \item[$W_t$]
     Innovation (noise) at date~$t$. Its distribution depends on the model:
     Gaussian for ARMA-N, Student-$t$ for ARMA-t and AR-SD-t,
-    and $\sigma_t Z_t$ for ARMA-GARCH-t.
+    and $\sigma_t Z_t$ for ARMA-GARCH-N / ARMA-GARCH-t.
   \item[$W_{t-1}$]
     One-period lagged innovation (MA term).
   \item[$\nu$]
@@ -62,12 +62,16 @@ This appendix lists all symbols used in the presentation of the five forecasting
     the variance equals $s^2\,\nu/(\nu-2)$ when $\nu > 2$.
 \end{description}
 
-\subsection*{A.4 ARMA-GARCH-t}
+\subsection*{A.4 ARMA-GARCH-N and ARMA-GARCH-t}
 
 \begin{align*}
   Y_t &= c + \varphi Y_{t-1} + W_t, \\
   W_t &= \sigma_t Z_t,
-  \qquad Z_t \sim t_{\nu}, \\
+  \qquad Z_t \sim
+  \begin{cases}
+    \mathcal{N}(0,1) & \text{(ARMA-GARCH-N)}, \\
+    t_{\nu} & \text{(ARMA-GARCH-t)},
+  \end{cases} \\
   \sigma_t^2 &= \omega + \alpha W_{t-1}^2 + \beta \sigma_{t-1}^2.
 \end{align*}
 
@@ -80,7 +84,7 @@ This appendix lists all symbols used in the presentation of the five forecasting
     Lagged conditional variance (GARCH persistence).
   \item[$Z_t$]
     Standardized residual: unit-variance white innovation,
-    here following a Student-$t$ distribution with $\nu$ degrees of freedom.
+    Gaussian for ARMA-GARCH-N, Student-$t$ with $\nu$ degrees of freedom for ARMA-GARCH-t.
   \item[$\omega$]
     Constant in the GARCH variance equation ($\omega > 0$).
   \item[$\alpha$]
@@ -179,7 +183,7 @@ The lower tail is modeled with a generalized Pareto distribution (GPD) on excess
 \subsection*{A.7 Summary of notational ambiguities}
 
 \begin{itemize}
-  \item $\beta$ denotes the GARCH coefficient in ARMA-GARCH-t, and the GPD scale in the Extreme Value model.
+  \item $\beta$ denotes the GARCH coefficient in ARMA-GARCH-N / ARMA-GARCH-t, and the GPD scale in the Extreme Value model.
   \item $\sigma$ / $\sigma_t$ denote a constant innovation scale (ARMA-N) or a conditional volatility (GARCH, AR-SD-t).
   \item $W_t$ is always the mean-equation innovation, but its distribution and any heteroskedastic structure depend on the model.
   \item Hats ($\hat{\,\cdot\,}$) mark estimated quantities (McNeil--Frey filter).

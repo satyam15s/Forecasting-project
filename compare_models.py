@@ -16,6 +16,7 @@ from matplotlib.dates import DateFormatter, YearLocator, date2num
 from download_data import BLACK_MONDAY, DATA_PATH, FRIDAY
 from models import (
     estimate_extremogram,
+    fit_ar_garch_n,
     fit_ar_garch_t,
     fit_ar_sd_t,
     fit_arma,
@@ -35,10 +36,11 @@ SIM_LENGTH = 5000
 FIGSIZE = (6.5, 3.2)
 DPI = 200
 
-MODEL_ORDER = ["ARMA-N", "ARMA-t", "ARMA-GARCH-t", "EVT (MF)", "AR-SD-t"]
+MODEL_ORDER = ["ARMA-N", "ARMA-t", "ARMA-GARCH-N", "ARMA-GARCH-t", "EVT (MF)", "AR-SD-t"]
 COLORS = {
     "ARMA-N": "#6a8395",
     "ARMA-t": "#385268",
+    "ARMA-GARCH-N": "#d4a017",
     "ARMA-GARCH-t": "#b05b23",
     "EVT (MF)": "#a52c25",
     "AR-SD-t": "#2f6b4f",
@@ -71,6 +73,7 @@ def fit_all(window: np.ndarray) -> list[dict]:
         warnings.simplefilter("ignore")
         results.append(fit_arma(window, "normal"))
         results.append(fit_arma(window, "t"))
+        results.append(fit_ar_garch_n(window))
         results.append(fit_ar_garch_t(window))
         results.append(fit_evt_mf(window))
         results.append(fit_ar_sd_t(window))
@@ -213,12 +216,35 @@ def plot_exceedance(rows: list[dict]) -> None:
 
 def plot_pinball(rows: list[dict]) -> None:
     fig, ax = plt.subplots(figsize=FIGSIZE, layout="constrained")
+    n_forecasts = 0
     for model in MODEL_ORDER:
         xs, pinball = _series_for_model(rows, model, "pinball")
+        _, hits = _series_for_model(rows, model, "hit")
         roll = _rolling_mean(pinball, PINBALL_ROLL)
-        ax.plot(xs, roll, color=COLORS[model], linewidth=1.1, label=model)
+        avg = float(np.nanmean(pinball))
+        n_forecasts = int(np.sum(np.isfinite(pinball)))
+        n_breaches = int(np.nansum(hits))
+        color = COLORS[model]
+        ax.plot(
+            xs,
+            roll,
+            color=color,
+            linewidth=1.1,
+            label=f"{model}: avg {avg:.3f}, {n_breaches}*",
+        )
+        ax.axhline(avg, color=color, linestyle=":", linewidth=1.0)
     span = PINBALL_ROLL * ORIGIN_STEP
     _style_half_slide(ax, f"Rolling ~{span}-day pinball loss (1% quantile)", "Pinball")
+    ax.text(
+        0.0,
+        -0.18,
+        f"* breaches / {n_forecasts} forecasts",
+        transform=ax.transAxes,
+        fontsize=7,
+        color="#404040",
+        ha="left",
+        va="top",
+    )
     fig.savefig(OUTPUT_DIR / "pinball_loss.png", dpi=DPI)
     plt.close(fig)
 

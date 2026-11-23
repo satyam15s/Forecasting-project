@@ -8,7 +8,7 @@ The downloader saves 2,024 daily S&P 500 price-index closes from December 31, 19
 
 1. Compute simple returns in percent as `100 * (close_today / close_previous_session - 1)`.
 2. **Event study** (`black_monday.py`): fit Gaussian and Student-t GARCH(1,1) on returns through Friday, October 16, 1987, then evaluate the probability of the observed Monday crash.
-3. **Rolling comparison** (`compare_models.py`): 1000-day rolling windows through end-1987, re-estimated every 5 sessions (`ORIGIN_STEP`), comparing five models at the 1% lower quantile. ARMA(1,1) is fit in pure NumPy/SciPy; GARCH uses `arch` when available and a NumPy fallback otherwise.
+3. **Rolling comparison** (`compare_models.py`): 1000-day rolling windows through end-1987, re-estimated every 5 sessions (`ORIGIN_STEP`), comparing six models at the 1% lower quantile. ARMA(1,1) is fit in pure NumPy/SciPy; GARCH uses `arch` when available and a NumPy fallback otherwise.
 
 ### Models in the rolling comparison
 
@@ -16,6 +16,7 @@ The downloader saves 2,024 daily S&P 500 price-index closes from December 31, 19
 | --- | --- |
 | ARMA-N | ARMA(1,1) + Gaussian residuals, constant variance |
 | ARMA-t | ARMA(1,1) + Student-t residuals, constant variance |
+| ARMA-GARCH-N | AR(1)–GARCH(1,1)–Gaussian |
 | ARMA-GARCH-t | AR(1)–GARCH(1,1)–Student-t |
 | EVT (MF) | McNeil–Frey: Gaussian AR(1)–GARCH filter + GPD on residual lower tail |
 | AR-SD-t | Simplified score-driven AR(1) with Student-t innovations (Delle Monache–Petrella style) |
@@ -37,8 +38,8 @@ The Student-t fit estimated about 8.17 degrees of freedom and assigned far more 
 
 Half-slide figures written to `outputs/`:
 
-1. `aic_rolling.png` — window AIC over time for ARMA-N, ARMA-t, ARMA-GARCH-t, AR-SD-t. **EVT is excluded**: its GPD likelihood is only over threshold exceedances and is not comparable to full-sample ARMA/GARCH AIC.
-2. `exceedance_rate.png` — rolling VaR hit rate at 1% versus the nominal 1% line (all five models).
+1. `aic_rolling.png` — window AIC over time for ARMA-N, ARMA-t, ARMA-GARCH-N, ARMA-GARCH-t, AR-SD-t. **EVT is excluded**: its GPD likelihood is only over threshold exceedances and is not comparable to full-sample ARMA/GARCH AIC.
+2. `exceedance_rate.png` — rolling VaR hit rate at 1% versus the nominal 1% line (all six models).
 3. `pinball_loss.png` — rolling pinball loss at the 1% quantile (main ranking metric for quantile forecasts).
 4. `extremogram.png` — Davis–Mikosch extremogram of absolute returns (quantile 0.98) for the pre-crash 1000-day window, plus long simulations from each fitted model.
 
